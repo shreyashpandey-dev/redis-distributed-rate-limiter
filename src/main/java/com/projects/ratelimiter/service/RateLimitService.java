@@ -1,9 +1,11 @@
 package com.projects.ratelimiter.service;
-
-import com.projects.ratelimiter.config.RedisConfig;
 import com.projects.ratelimiter.dto.RateLimitRequest;
+import com.projects.ratelimiter.dto.RateLimitResponse;
+import com.projects.ratelimiter.exception.RateLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -19,7 +21,7 @@ public class RateLimitService {
     {
         this.redisTemplate = redisTemplate;
     }
-    public int calculateLimit(RateLimitRequest rateLimitRequest)
+    public RateLimitResponse calculateLimit(RateLimitRequest rateLimitRequest)
     {
         String key="rate:"+rateLimitRequest.getClientId();
         Long currentCnt=redisTemplate.opsForValue().increment(key);
@@ -27,9 +29,13 @@ public class RateLimitService {
         {
             redisTemplate.expire(key, Duration.ofSeconds(Window_size));
         }
+        long ttl=redisTemplate.getExpire(key);
+        long remainingReq=LIMIT-currentCnt;
         if(currentCnt>LIMIT)
-            return -1;
-        return 1;
+        {
+            throw new RateLimitExceededException("Rate Limit exceeded. Try again in "+ ttl+ " seconds");
+        }
+        return new RateLimitResponse(true,Math.max(remainingReq,0),ttl);
     }
 
 
