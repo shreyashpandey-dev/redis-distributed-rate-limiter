@@ -48,14 +48,6 @@ The service is stateless and horizontally scalable, with Redis acting as a centr
 - Docker Engine running
 
 ---
-## 🚀 How to Run This Project After Cloning
-
-### ✅ Prerequisites
-
-- Docker installed
-- Docker Engine running
-
----
 
 ### 📥 Step 1: Clone the Repository
 
