@@ -111,6 +111,8 @@ docker-compose up -d --build
 ```
 ##### HTTP Status: 429 TOO MANY REQUESTS
 
+---
+
 ### 📌 Step 5: Stop the Application 
 
 ```bash
