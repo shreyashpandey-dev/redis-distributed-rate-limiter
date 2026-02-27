@@ -70,11 +70,11 @@ docker-compose up -d --build
 ```
 ### This command will:
 
-1)Pull Redis image
-2)Build the Spring Boot application image
-3)Start Redis container
-4)Start the application container
-5)Expose the API on port 8080
+1. Pull Redis image
+2. Build the Spring Boot application image
+3. Start Redis container
+4. Start the application container
+5. Expose the API on port 8080
 
 ---
 
