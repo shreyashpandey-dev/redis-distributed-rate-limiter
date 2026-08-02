@@ -1,117 +1,86 @@
-# 🚀 Redis Distributed Rate Limiter
+# Redis Distributed Rate Limiter
 
-A distributed rate limiting service built using **Spring Boot** and **Redis**, implementing a **fixed-window** throttling algorithm using Redis atomic counters and TTL-based windowing.
-
-The service is stateless and horizontally scalable, with Redis acting as a centralized atomic counter store. The entire system is fully containerized using Docker and Docker Compose for seamless local setup.
+A rate limiting service built with **Spring Boot** and **Redis**. It restricts how many times a client can call an API within a time window, and returns a clear error when the limit is exceeded.
 
 ---
 
-## 🏗 Architecture Overview
+## How it works
 
-### 🔹 Components
+Each request carries a `clientId`. The service tracks how many requests that client has made in the last 60 seconds using Redis. If they exceed the limit, the API returns a `429 Too Many Requests` response.
 
-- **Spring Boot REST API**
-- **Redis (Distributed Counter Store)**
-- **Fixed Window Rate Limiting Algorithm**
-- **Global Exception Handling**
-- **Dockerized Deployment**
+The limit and window size are configurable in `application.yaml` — no code change needed.
 
 ---
 
-### 🔄 Request Flow
+## Tech Stack
 
-1. Client sends request with `clientId`
-2. Service generates Redis key: rate:{clientId}
-3. Redis performs atomic `INCR`
-4. TTL is set only when the counter is created (current count = 1), defining the fixed window duration.
-5. If request count exceeds limit → HTTP `429 TOO MANY REQUESTS` returned
-6. Otherwise, remaining quota and reset time are returned
-
----
-
-## ⚙️ Tech Stack
-
-- Java 17
-- Spring Boot
-- Spring Data Redis
+- Java 17, Spring Boot 4
 - Redis 7
-- Docker
-- Docker Compose
+- Docker, Docker Compose
 
 ---
 
-## 🚀 Run Locally (Recommended)
+## Run Locally
 
-### ✅ Prerequisites
-
-- Docker installed
-- Docker Engine running
-
----
-
-### 📥 Step 1: Clone the Repository
+**Prerequisites:** Docker Desktop installed and running.
 
 ```bash
-git clone https://github.com/<your-username>/redis-distributed-rate-limiter.git
+# 1. Clone
+git clone https://github.com/shreyashpandey-dev/redis-distributed-rate-limiter.git
 cd redis-distributed-rate-limiter
+
+# 2. Build the JAR
+mvnw.cmd package -DskipTests       # Windows
+./mvnw package -DskipTests         # Mac/Linux
+
+# 3. Start
+docker-compose up --build -d
 ```
 
-### 📥 Step 2: Start the Application
-```bash
-docker-compose up -d --build
-```
-### This command will:
-
-1. Pull Redis image
-2. Build the Spring Boot application image
-3. Start Redis container
-4. Start the application container
-5. Expose the API on port 8080
+The API is available at `http://localhost:8081`.
 
 ---
 
-### 📌 Step 4: Access the API
+## API
 
-
-#### Endpoint
-
-
-#### POST http://localhost:8080/api/rate-limit
+**POST** `http://localhost:8081/api/rate-limit`
 
 ```json
-{
-  "clientId": "user1"
-}
+{ "clientId": "user1" }
 ```
 
-#### ✅ Succesful response 
-
+**Allowed (200):**
 ```json
 {
   "allowed": true,
-  "remainingRequests": 4,
-  "resetInSeconds": 55
+  "remainingRequest": 4,
+  "resetInSeconds": 58
 }
 ```
 
-#### ❌ Rate Limit Exceeded Response
+**Limit exceeded (429):**
 ```json
 {
   "allowed": false,
-  "message": "Rate limit exceeded. Try again in 42 seconds."
+  "message": "Rate Limit exceeded. Try again in 58 seconds"
 }
 ```
-##### HTTP Status: 429 TOO MANY REQUESTS
 
 ---
 
-### 📌 Step 5: Stop the Application 
+## Configuration
+
+```yaml
+# src/main/resources/application.yaml
+rate-limit:
+  limit: 5            # requests allowed per window
+  window-seconds: 60  # window size in seconds
+```
+
+---
+
+## Stop
 
 ```bash
 docker-compose down
 ```
-
-#### Also stop your Docker engine
-
-
-
