@@ -1,14 +1,10 @@
 # Redis Distributed Rate Limiter
 
-A rate limiting service built with **Spring Boot** and **Redis**. It restricts how many times a client can call an API within a time window, and returns a clear error when the limit is exceeded.
+A distributed rate limiting service built with **Spring Boot** and **Redis**. It enforces a per-client request limit using a **Sliding Window algorithm** — meaning the limit applies to any rolling time window, not just fixed intervals. This prevents clients from bursting at window boundaries, which is a known weakness of simpler Fixed Window approaches.
 
----
+Each client's request timestamps are stored in a **Redis Sorted Set (ZSET)**. On every request, expired entries are evicted and the remaining count determines whether to allow or reject the request. The response also tells the client exactly how many seconds until a slot frees up.
 
-## How it works
-
-Each request carries a `clientId`. The service tracks how many requests that client has made in the last 60 seconds using Redis. If they exceed the limit, the API returns a `429 Too Many Requests` response.
-
-The limit and window size are configurable in `application.yaml` — no code change needed.
+The limit and window size are fully configurable — no code change needed.
 
 ---
 
