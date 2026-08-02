@@ -6,3 +6,7 @@ spring:
       # Spring Boot 4: spring.data.redis.* (env: SPRING_DATA_REDIS_HOST / SPRING_DATA_REDIS_PORT)
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
+
+rate-limit:
+  limit: 5
+  window-seconds: 60
